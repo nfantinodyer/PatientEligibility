@@ -1,0 +1,6 @@
+train: C:/Users/2013r/PatientEligibility/data/images/train
+val: C:/Users/2013r/PatientEligibility/data/images/val
+
+names:
+  0: PlateUp!
+  1: 20 Minutes Till Dawn
