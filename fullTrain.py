@@ -6,7 +6,7 @@ from ultralytics import YOLO
 DATA_YAML = "data.yaml"
 MODEL_OUTPUT_DIR = "runs/detect/rm7"
 BEST_PT = os.path.join(MODEL_OUTPUT_DIR, "weights", "best.pt")
-EPOCHS_FULL = 100  # big run
+EPOCHS_FULL = 300  # big run
 
 def ensure_dirs():
     os.makedirs(os.path.join(MODEL_OUTPUT_DIR, "weights"), exist_ok=True)

@@ -14,13 +14,13 @@ from ultralytics import YOLO
 ##################################################
 DATA_YAML = "data.yaml"
 
-BEST_MODEL_DIR = "runs/detect/train/weights"
+BEST_MODEL_DIR = "runs/detect/rm7/train/weights"
 BEST_PT = os.path.join(BEST_MODEL_DIR, "best.pt")
 
-TRAIN_IMG_DIR  = "data/images/train"
-TRAIN_LABEL_DIR= "data/labels/train"
-VAL_IMG_DIR    = "data/images/val"
-VAL_LABEL_DIR  = "data/labels/val"
+TRAIN_IMG_DIR  = "data/images/rm7/train"
+TRAIN_LABEL_DIR= "data/labels/rm7/train"
+VAL_IMG_DIR    = "data/images/rm7/val"
+VAL_LABEL_DIR  = "data/labels/rm7/val"
 
 CONF_THRESHOLD = 0.5
 
@@ -46,7 +46,7 @@ def capture_window(window_title):
     try:
         win = Desktop(backend='uia').window(title_re=f".*{window_title}.*")
         win.set_focus()
-        time.sleep(0.5)
+        #
         print(f"[INFO] Focused window '{window_title}'.")
     except Exception as e:
         print(f"[WARN] Could not focus window '{window_title}': {e}")
@@ -110,8 +110,16 @@ def user_label_image(image_cv, class_id=0):
     global sx,sy,ex,ey,drawing
     wname=f"Label Class {class_id} - (s=save, q=skip)"
     cv2.namedWindow(wname, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(wname,1280,720)
+    cv2.resizeWindow(wname,1920,1080)
     cv2.setMouseCallback(wname, mouse_cb)
+    #use pywinauto to set the window to the top
+    try:
+        win = Desktop(backend='uia').window(title_re=wname)
+        win.set_focus()
+    except Exception as e:
+        print(f"[WARN] Could not focus window '{wname}': {e}")
+    #make it fullscreen
+    cv2.setWindowProperty(wname, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     sx=sy=ex=ey=-1
     clone = image_cv.copy()
@@ -129,10 +137,30 @@ def user_label_image(image_cv, class_id=0):
                 print("[WARN] No bounding box drawn, try again.")
                 continue
 
-            # save to train
+            # save to both train and val folders 80/20 split
+            #count how many files are in the train and val folders
+            train_files = len(os.listdir(TRAIN_IMG_DIR))
+            val_files = len(os.listdir(VAL_IMG_DIR))
+            #compare the two and make sure the train folder is 80% if total is>80% then save to val folder
+            if train_files+val_files>0:
+                if train_files/(train_files+val_files)>0.8:
+                    img_dir = VAL_IMG_DIR
+                    lbl_dir = VAL_LABEL_DIR
+                else:
+                    img_dir = TRAIN_IMG_DIR
+                    lbl_dir = TRAIN_LABEL_DIR
+            else:
+                rand_num = np.random.randint(0, 100)
+                if rand_num < 80:
+                    img_dir = TRAIN_IMG_DIR
+                    lbl_dir = TRAIN_LABEL_DIR
+                else:
+                    img_dir = VAL_IMG_DIR
+                    lbl_dir = VAL_LABEL_DIR
+            
             tstamp=int(time.time())
             fname=f"user_{class_id}_{tstamp}.jpg"
-            img_path = os.path.join(TRAIN_IMG_DIR,fname)
+            img_path = os.path.join(img_dir,fname)
             cv2.imwrite(img_path,image_cv)
 
             h,w=image_cv.shape[:2]
@@ -145,7 +173,7 @@ def user_label_image(image_cv, class_id=0):
             norm_w=bw/w
             norm_h=bh/h
 
-            lbl_path=os.path.join(TRAIN_LABEL_DIR,fname.replace(".jpg",".txt"))
+            lbl_path=os.path.join(lbl_dir,fname.replace(".jpg",".txt"))
             with open(lbl_path,"w") as lf:
                 line=f"{class_id} {x_c:.6f} {y_c:.6f} {norm_w:.6f} {norm_h:.6f}"
                 lf.write(line+"\n")
@@ -175,7 +203,7 @@ def main():
         img0 = capture_window(args.window)
         found0 = detect_class(img0, class_id=0, conf_thres=CONF_THRESHOLD)
         if found0:
-            print("[INFO] Class 0 (PlateUp!) found => no labeling needed.")
+            print("[INFO] Class 0 Insurance found => no labeling needed.")
         else:
             print("[INFO] Class 0 not found => user labeling.")
             user_label_image(img0, class_id=0)
@@ -184,6 +212,7 @@ def main():
             continue  # after training, repeat the loop
 
         # 2) Wait 3 seconds
+        """
         print("[INFO] Wait 3 seconds, then check class 1.")
         time.sleep(3)
 
@@ -191,7 +220,7 @@ def main():
         img1 = capture_window(args.window)
         found1 = detect_class(img1, class_id=1, conf_thres=CONF_THRESHOLD)
         if found1:
-            print("[INFO] Class 1 (Factorio) found => no labeling needed.")
+            print("[INFO] Class 1 FullBreakdown found => no labeling needed.")
         else:
             print("[INFO] Class 1 not found => user labeling.")
             user_label_image(img1, class_id=1)
@@ -201,6 +230,7 @@ def main():
 
         # if we reach here => both found in one pass
         print("[INFO] Both classes found in this iteration => done!")
+        """
         break
 
     print("[INFO] Exiting script. We have both classes now.")

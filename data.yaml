@@ -1,5 +1,5 @@
-train: C:/Users/2013r/PatientEligibility/data/images/train
-val: C:/Users/2013r/PatientEligibility/data/images/val
+train: C:/Users/2013r/PatientEligibility/data/images/rm7/train
+val: C:/Users/2013r/PatientEligibility/data/images/rm7/val
 
 names:
   0: Insurance
