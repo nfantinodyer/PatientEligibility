@@ -4,7 +4,7 @@ import argparse
 from ultralytics import YOLO
 
 DATA_YAML = "data.yaml"
-MODEL_OUTPUT_DIR = "runs/detect/train"
+MODEL_OUTPUT_DIR = "runs/detect/rm7"
 BEST_PT = os.path.join(MODEL_OUTPUT_DIR, "weights", "best.pt")
 EPOCHS_FULL = 100  # big run
 
@@ -28,12 +28,12 @@ def train_full():
         imgsz=1920,
         batch=7,
         project="runs/detect",
-        name="train",
+        name="rm7",
         exist_ok=True,
         resume=False,
         plots=True   # if you want PR/F1 curves
     )
-    print("[INFO] Full training done. Final best => runs/detect/train/weights/best.pt")
+    print("[INFO] Full training done. Final best => runs/detect/rm7/weights/best.pt")
 
 def main():
     parser=argparse.ArgumentParser()

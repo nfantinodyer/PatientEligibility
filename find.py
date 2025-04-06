@@ -64,7 +64,7 @@ def run_detection_for_class(
         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().tolist()
         cv2.rectangle(display_img, (int(x1), int(y1)), (int(x2), int(y2)),
                       color=(0, 255, 0), thickness=2)
-        label_str = f"cls={cls_id}, conf={conf:.2f}"
+        label_str = f"cls={cls_id}, conf={conf:.5f}"
         cv2.putText(display_img, label_str, (int(x1), int(y1) - 5),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 

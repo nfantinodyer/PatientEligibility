@@ -37,7 +37,7 @@ def ensure_dirs():
 ##################################################
 # CAPTURE WINDOW
 ##################################################
-def capture_window(window_title="Steam"):
+def capture_window(window_title):
     """
     Focus a window (if found) by partial title, wait 0.5s, 
     then do a full-screen screenshot via pyautogui, 
@@ -165,7 +165,7 @@ def user_label_image(image_cv, class_id=0):
 ##################################################
 def main():
     parser=argparse.ArgumentParser()
-    parser.add_argument("--window", default="Steam", help="Which window to capture.")
+    parser.add_argument("--window", default="Remote Control", help="Which window to capture.")
     args=parser.parse_args()
 
     ensure_dirs()
