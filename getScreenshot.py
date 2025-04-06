@@ -22,7 +22,7 @@ TRAIN_LABEL_DIR= "data/labels/rm7/train"
 VAL_IMG_DIR    = "data/images/rm7/val"
 VAL_LABEL_DIR  = "data/labels/rm7/val"
 WINDOW_TITLE = "Remote Control"  # window title to focus before screenshot
-CONF_THRESHOLD = 0.5
+CONF_THRESHOLD = 0.9
 
 ##################################################
 # CREATE DIRS
@@ -81,6 +81,8 @@ def detect_class(image_cv, class_id, conf_thres=CONF_THRESHOLD):
         cls   = int(box.cls[0].item())
         if cls == class_id and conf >= conf_thres:
             return True
+        else:
+            print(f"[INFO] Class {cls} detected with confidence {conf:.2f}.")
 
     return False
 
@@ -113,15 +115,14 @@ def user_label_image(image_cv, class_id=0):
     cv2.namedWindow(wname, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(wname,1920,1080)
     cv2.setMouseCallback(wname, mouse_cb)
+    time.sleep(0.5)
     #set the window to be always on top using pywinauto
     win = Desktop(backend='uia').window(title_re=f".*Class {class_id}.*")
     win.set_focus()
-    #make it fullscreen
-    cv2.setWindowProperty(wname, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
+    win.maximize()
+    win.set_focus() #second since sometimes it doesn't work the first time
     sx=sy=ex=ey=-1
     clone = image_cv.copy()
-
     while True:
         temp=clone.copy()
         if sx!=-1 and sy!=-1 and ex!=-1 and ey!=-1:
@@ -190,6 +191,9 @@ def user_label_image(image_cv, class_id=0):
         elif key==ord('q'):
             print("[INFO] Skipped labeling => no new data.")
             cv2.destroyWindow(wname)
+            win = Desktop(backend='uia').window(title_re=f".*{WINDOW_TITLE}.*")
+            win.set_focus()
+            win.maximize()
             return False
 
 ##################################################

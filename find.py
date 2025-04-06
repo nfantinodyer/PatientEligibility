@@ -8,6 +8,8 @@ import numpy as np
 from pywinauto import Desktop
 from ultralytics import YOLO
 
+CONF_THRESHOLD = 0.8
+
 def focus_window(window_title):
     """
     Tries to find a window by regex title and bring it to the front.
@@ -26,7 +28,7 @@ def run_detection_for_class(
     image_cv, 
     model, 
     target_class_id, 
-    conf_thres=0.5, 
+    conf_thres=CONF_THRESHOLD, 
     duration=2, 
     window_title="Detections"
 ):
@@ -56,6 +58,7 @@ def run_detection_for_class(
         cls_id = int(box.cls[0].item())
         # Filter out by confidence
         if conf < conf_thres:
+            print(f"[INFO] Class {cls_id} detected with confidence {conf:.2f}.")
             continue
         # Filter by class_id
         if cls_id != target_class_id:
@@ -109,7 +112,7 @@ def main():
     parser.add_argument(
         "--conf_thres",
         type=float,
-        default=0.5,
+        default=CONF_THRESHOLD,
         help="Confidence threshold for detections (default=0.5)"
     )
     parser.add_argument(
