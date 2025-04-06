@@ -14,14 +14,14 @@ from ultralytics import YOLO
 ##################################################
 DATA_YAML = "data.yaml"
 
-BEST_MODEL_DIR = "runs/detect/rm7/train/weights"
+BEST_MODEL_DIR = "runs/detect/rm7/weights"
 BEST_PT = os.path.join(BEST_MODEL_DIR, "best.pt")
 
 TRAIN_IMG_DIR  = "data/images/rm7/train"
 TRAIN_LABEL_DIR= "data/labels/rm7/train"
 VAL_IMG_DIR    = "data/images/rm7/val"
 VAL_LABEL_DIR  = "data/labels/rm7/val"
-
+WINDOW_TITLE = "Remote Control"  # window title to focus before screenshot
 CONF_THRESHOLD = 0.5
 
 ##################################################
@@ -46,7 +46,8 @@ def capture_window(window_title):
     try:
         win = Desktop(backend='uia').window(title_re=f".*{window_title}.*")
         win.set_focus()
-        #
+        win.maximize()
+        time.sleep(0.5)
         print(f"[INFO] Focused window '{window_title}'.")
     except Exception as e:
         print(f"[WARN] Could not focus window '{window_title}': {e}")
@@ -59,7 +60,7 @@ def capture_window(window_title):
 ##################################################
 # DETECT CLASS
 ##################################################
-def detect_class(image_cv, class_id=0, conf_thres=CONF_THRESHOLD):
+def detect_class(image_cv, class_id, conf_thres=CONF_THRESHOLD):
     """
     Load best model if it exists, else yolov8s.pt.
     Detect => see if there's a bounding box with class_id above conf_thres.
@@ -112,12 +113,9 @@ def user_label_image(image_cv, class_id=0):
     cv2.namedWindow(wname, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(wname,1920,1080)
     cv2.setMouseCallback(wname, mouse_cb)
-    #use pywinauto to set the window to the top
-    try:
-        win = Desktop(backend='uia').window(title_re=wname)
-        win.set_focus()
-    except Exception as e:
-        print(f"[WARN] Could not focus window '{wname}': {e}")
+    #set the window to be always on top using pywinauto
+    win = Desktop(backend='uia').window(title_re=f".*Class {class_id}.*")
+    win.set_focus()
     #make it fullscreen
     cv2.setWindowProperty(wname, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
@@ -181,6 +179,12 @@ def user_label_image(image_cv, class_id=0):
             print(f"[INFO] Labeled => {img_path}, class={class_id}")
             print(f"[INFO] Label => {lbl_path}")
             cv2.destroyWindow(wname)
+
+            win = Desktop(backend='uia').window(title_re=f".*{WINDOW_TITLE}.*")
+            win.set_focus()
+            #make the window fullscreen using pywinauto
+            win.maximize()
+
             return True
 
         elif key==ord('q'):

@@ -16,6 +16,7 @@ def focus_window(window_title):
     try:
         win = Desktop(backend='uia').window(title_re=f".*{window_title}.*")
         win.set_focus()
+        win.maximize()
         time.sleep(0.5)  # small delay to ensure the window is in front
         print(f"[INFO] Focused window matching '{window_title}'.")
     except Exception as e:
@@ -85,21 +86,24 @@ def run_detection_for_class(
     cv2.namedWindow(window_title, cv2.WINDOW_NORMAL)
     cv2.resizeWindow(window_title, 1920, 1080)
     cv2.imshow(window_title, display_img)
-    cv2.waitKey(duration * 1000)
+    focus_window(window_title)  # Ensure the window is in focus
+    cv2.waitKey(duration * 3000)
     cv2.destroyWindow(window_title)
+    window_title="Remote Control"
+    focus_window(window_title)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
         type=str,
-        default="runs/detect/train/weights/best.pt",
-        help="Path to YOLO model weights (default: runs/detect/train/weights/best.pt)"
+        default="runs/detect/rm7/weights/best.pt",
+        help="Path to YOLO model weights (default: runs/detect/rm7/weights/best.pt)"
     )
     parser.add_argument(
         "--window",
         type=str,
-        default="",
+        default="Remote Control",
         help="Window title (partial) to focus before screenshot. Leave blank for none."
     )
     parser.add_argument(
@@ -133,16 +137,16 @@ def main():
     print(f"[INFO] Loading YOLO model => {args.model}")
     model = YOLO(args.model)
 
-    # 4) Run detection for class 0 (PlateUp!)
-    print("[INFO] Detecting class 0 (PlateUp!)...")
+    # 4) Run detection for class 0
+    print("[INFO] Detecting class 0 Insurance...")
     run_detection_for_class(
         image_cv, model, 
         target_class_id=0, 
         conf_thres=args.conf_thres, 
         duration=args.duration, 
-        window_title="Detection - Class 0 (PlateUp!)"
+        window_title="Detection - Class 0 Insurance"
     )
-
+    """
     # 5) Wait 5 seconds
     print("[INFO] Waiting 5 seconds before next detection...")
     time.sleep(5)
@@ -156,6 +160,7 @@ def main():
         duration=args.duration, 
         window_title="Detection - Class 1 (Factorio)"
     )
+    """
 
     print("[INFO] Done.")
 
